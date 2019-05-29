@@ -23,7 +23,7 @@
     <packaging>pom</packaging>
 
     <properties>
-        <seed.version>3.5.0</seed.version>
+        <seed.version>3.8.5</seed.version>
         <business.version>4.2.2</business.version>
         <modelmapper-addon.version>1.0.0</modelmapper-addon.version>
 
