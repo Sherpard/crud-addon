@@ -27,7 +27,7 @@ import org.seedstack.seed.undertow.LaunchWithUndertow;
 @RunWith(SeedITRunner.class)
 @LaunchWithUndertow
 public class ImplicitUpdateResourceIT {
-  @Configuration("web.runtime.baseUrl")
+  @Configuration("runtime.web.baseUrlSlash")
   private String url;
 
   @Inject

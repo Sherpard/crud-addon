@@ -26,7 +26,7 @@ import org.seedstack.seed.undertow.LaunchWithUndertow;
 @RunWith(SeedITRunner.class)
 @LaunchWithUndertow
 public class ImplicitDeleteResourceIT {
-  @Configuration("web.runtime.baseUrl")
+  @Configuration("runtime.web.baseUrlSlash")
   private String url;
 
   @Inject

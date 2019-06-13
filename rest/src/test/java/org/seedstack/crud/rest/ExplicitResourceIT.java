@@ -33,7 +33,7 @@ public class ExplicitResourceIT {
   @Inject
   private Repository<Customer, CustomerId> customerRepository;
 
-  @Configuration("web.runtime.baseUrl")
+  @Configuration("runtime.web.baseUrlSlash")
   private String url;
 
   @Test
