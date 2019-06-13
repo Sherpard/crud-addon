@@ -14,24 +14,8 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javassist.CannotCompileException;
-
-import javassist.ClassPool;
-import javassist.CtClass;
-import javassist.CtConstructor;
-import javassist.CtNewConstructor;
-import javassist.LoaderClassPath;
-import javassist.NotFoundException;
-import javassist.bytecode.AnnotationsAttribute;
-import javassist.bytecode.ClassFile;
-import javassist.bytecode.ConstPool;
-import javassist.bytecode.SignatureAttribute;
-import javassist.bytecode.SignatureAttribute.ClassType;
-import javassist.bytecode.annotation.Annotation;
-import javassist.bytecode.annotation.StringMemberValue;
-import javassist.util.proxy.ProxyFactory;
-
 import javax.inject.Inject;
+import javax.transaction.Transactional;
 import javax.ws.rs.Path;
 
 import org.seedstack.business.assembler.DtoOf;
@@ -46,10 +30,24 @@ import org.seedstack.crud.rest.ReadResource;
 import org.seedstack.crud.rest.RestCrud;
 import org.seedstack.crud.rest.UpdateResource;
 import org.seedstack.shed.ClassLoaders;
-
 import org.slf4j.Logger;
-
 import org.slf4j.LoggerFactory;
+
+import javassist.CannotCompileException;
+import javassist.ClassPool;
+import javassist.CtClass;
+import javassist.CtConstructor;
+import javassist.CtNewConstructor;
+import javassist.LoaderClassPath;
+import javassist.NotFoundException;
+import javassist.bytecode.AnnotationsAttribute;
+import javassist.bytecode.ClassFile;
+import javassist.bytecode.ConstPool;
+import javassist.bytecode.SignatureAttribute;
+import javassist.bytecode.SignatureAttribute.ClassType;
+import javassist.bytecode.annotation.Annotation;
+import javassist.bytecode.annotation.StringMemberValue;
+import javassist.util.proxy.ProxyFactory;
 
 class CrudResourceGenerator {
   private static final String CONSTRUCTOR_TEMPLATE = "super(%s.class,%s.class,%s.class);";
@@ -155,6 +153,9 @@ class CrudResourceGenerator {
 
       addPathAnnotation(resource, restAnnotation,
           generateClassName(dtoClass).replace("Resource", ""));
+
+//      addTransactionalAnnotation(resource);
+
       resource.addConstructor(createConstructor(resource.getClassFile().getConstPool(),
           resource,
           aggregateRootClass,
@@ -172,7 +173,9 @@ class CrudResourceGenerator {
 
   private void prepareImports() {
     classPool.importPackage(AggregateNotFoundException.class.getPackage().getName());
-    classPool.importPackage(javax.ws.rs.NotFoundException.class.getPackage().getName());
+    classPool.importPackage(NotFoundException.class.getPackage().getName());
+    classPool.importPackage(Transactional.class.getPackage().getName());
+    
 
   }
 
@@ -211,6 +214,13 @@ class CrudResourceGenerator {
     ClassFile ccFile = resource.getClassFile();
     ConstPool constPool = ccFile.getConstPool();
     AnnotationsAttribute attr = createAnnotation(Path.class, resourceName, constPool);
+    ccFile.addAttribute(attr);
+  }
+
+  private void addTransactionalAnnotation(CtClass resource) {
+    ClassFile ccFile = resource.getClassFile();
+    ConstPool constPool = ccFile.getConstPool();
+    AnnotationsAttribute attr = createAnnotation(Transactional.class, "", constPool);
     ccFile.addAttribute(attr);
   }
 
