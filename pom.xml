@@ -1,6 +1,6 @@
 <!--
 
-    Copyright © 2013-2018, The SeedStack authors <http://seedstack.org>
+    Copyright © 2013-2019, The SeedStack authors <http://seedstack.org>
 
     This Source Code Form is subject to the terms of the Mozilla Public
     License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -26,6 +26,7 @@
         <seed.version>3.8.5</seed.version>
         <business.version>4.2.2</business.version>
         <transaction-api.version>1.2</transaction-api.version>
+        <jpa-addon.version>4.0.5</jpa-addon.version>
 
         <compatibility.skip>true</compatibility.skip>
 
@@ -78,6 +79,7 @@
 
     <modules>
         <module>rest</module>
+        <module>crud-jpa-test</module>
     </modules>
 
     <scm>

@@ -1,11 +1,10 @@
 /*
- * Copyright © 2013-2018, The SeedStack authors <http://seedstack.org>
+ * Copyright © 2013-2019, The SeedStack authors <http://seedstack.org>
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-
 package org.seedstack.crud.rest.internal;
 
 import com.google.inject.AbstractModule;
@@ -24,55 +23,70 @@ import java.util.Set;
 
 import org.seedstack.seed.core.internal.AbstractSeedPlugin;
 import org.seedstack.seed.rest.spi.RestProvider;
+import org.seedstack.shed.reflect.Classes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class CrudRestPlugin extends AbstractSeedPlugin implements RestProvider {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(CrudRestPlugin.class);
-  private final Set<Class<?>> crudGeneratedResources = new HashSet<>();
-  private final List<Class<?>> crudResources = new ArrayList<>();
-  private final CrudResourceGenerator generator = new CrudResourceGenerator();
+    public static final String JPA_UNIT_ANNOTATION = "org.seedstack.jpa.JpaUnit";
+    public static final String TRANSACTIONAL_ANNOTATION = "javax.transaction.Transactional";
 
-  @Override
-  public Collection<ClasspathScanRequest> classpathScanRequests() {
-    return new ClasspathScanRequestBuilder().specification(CrudResourceSpecification.INSTANCE)
-        .build();
-  }
+    private static final boolean JPA_AVAILABLE = Classes.optional(JPA_UNIT_ANNOTATION).isPresent();
+    private static final boolean TRANSACTIONAL_AVAILABLE = Classes
+            .optional(TRANSACTIONAL_ANNOTATION).isPresent();
 
-  @Override
-  public String name() {
-    return "crud-rest";
-  }
+    private static final Logger LOGGER = LoggerFactory.getLogger(CrudRestPlugin.class);
+    private final Set<Class<?>> crudGeneratedResources = new HashSet<>();
+    private final List<Class<?>> crudResources = new ArrayList<>();
+    private final CrudResourceGenerator generator = new CrudResourceGenerator();
 
-  @Override
-  public Object nativeUnitModule() {
-    return new AbstractModule() {
-      @Override
-      protected void configure() {
-        install(new RestCrudModule(crudGeneratedResources));
-      }
-    };
-  }
+    @Override
+    public Collection<ClasspathScanRequest> classpathScanRequests() {
+        return new ClasspathScanRequestBuilder().specification(CrudResourceSpecification.INSTANCE)
+                .build();
+    }
 
-  @Override
-  public Set<Class<?>> providers() {
-    return Collections.emptySet();
-  }
+    @Override
+    public String name() {
+        return "crud-rest";
+    }
 
-  @Override
-  public Set<Class<?>> resources() {
-    return crudGeneratedResources;
-  }
+    @Override
+    public Object nativeUnitModule() {
+        return new AbstractModule() {
+            @Override
+            protected void configure() {
+                install(new RestCrudModule(crudGeneratedResources));
+            }
+        };
+    }
 
-  @Override
-  protected InitState initialize(InitContext initContext) {
-    crudResources.addAll(initContext.scannedTypesBySpecification()
-        .get(CrudResourceSpecification.INSTANCE));
+    @Override
+    public Set<Class<?>> providers() {
+        return Collections.emptySet();
+    }
 
-    LOGGER.debug("found {} annotated Dto's to be build", crudResources.size());
+    @Override
+    public Set<Class<?>> resources() {
+        return crudGeneratedResources;
+    }
 
-    crudResources.stream().map(generator::generate).forEach(crudGeneratedResources::add);
-    return InitState.INITIALIZED;
-  }
+    @Override
+    protected InitState initialize(InitContext initContext) {
+        crudResources.addAll(initContext.scannedTypesBySpecification()
+                .get(CrudResourceSpecification.INSTANCE));
+
+        LOGGER.debug("found {} annotated Dto's to be build", crudResources.size());
+
+        if (JPA_AVAILABLE && TRANSACTIONAL_AVAILABLE) {
+            LOGGER.debug("JPA Plugin detected, Adding support for generated classes");
+            generator.enableJpaPlugin();
+        }else {
+            LOGGER.debug("JPA Plugin not detected, Skipping Jpa Support");
+        }
+
+        crudResources.stream().map(generator::generate).forEach(crudGeneratedResources::add);
+        return InitState.INITIALIZED;
+    }
 }

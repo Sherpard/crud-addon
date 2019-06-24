@@ -1,6 +1,6 @@
 <!--
 
-    Copyright © 2013-2018, The SeedStack authors <http://seedstack.org>
+    Copyright © 2013-2019, The SeedStack authors <http://seedstack.org>
 
     This Source Code Form is subject to the terms of the Mozilla Public
     License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -42,13 +42,6 @@
 			<version>${javax.ws.rs.version}</version>
 			<scope>provided</scope>
 		</dependency>
-        <dependency>
-            <groupId>javax.transaction</groupId>
-            <artifactId>javax.transaction-api</artifactId>
-            <version>${transaction-api.version}</version>
-            <scope>provided</scope>
-        </dependency>
-
 		<dependency>
 			<groupId>org.seedstack.seed</groupId>
 			<artifactId>seed-testing-junit4</artifactId>

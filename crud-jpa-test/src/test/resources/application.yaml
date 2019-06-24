@@ -1,0 +1,34 @@
+#
+# Copyright © 2013-2019, The SeedStack authors <http://seedstack.org>
+#
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+#
+
+classes:
+  org:
+    seedstack:
+      crud:
+        defaultRepository: org.seedstack.jpa.Jpa
+
+logging:
+  level: INFO
+  loggers:
+    org.seedstack.crud : DEBUG
+
+jdbc:
+  datasources:
+    datasource1:
+      url: jdbc:hsqldb:mem:testdb1
+      
+      
+jpa:
+  defaultUnit: unit1
+  units:
+    unit1:
+      datasource: datasource1
+      properties:
+        hibernate.dialect: org.hibernate.dialect.HSQLDialect
+        hibernate.hbm2ddl.auto: create
+     
