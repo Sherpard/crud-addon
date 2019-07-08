@@ -22,6 +22,7 @@ import org.seedstack.business.pagination.dsl.LimitPicker;
 import org.seedstack.business.pagination.dsl.PaginationTypePicker;
 import org.seedstack.business.pagination.dsl.SpecificationPicker;
 import org.seedstack.business.specification.Specification;
+import org.seedstack.seed.transaction.Transactional;
 
 /**
  * Specialization of {@link Resource} for reading aggregates (the R of CRUD).

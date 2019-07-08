@@ -55,6 +55,6 @@ public class JpaIntegrationTest {
 
     @Test
     public void testGet() throws Exception {
-        RestAssured.given().get(url + "item-explicit").then().statusCode(200);
+        RestAssured.given().get(url + "item-explicit/1").then().statusCode(200);
     }
 }

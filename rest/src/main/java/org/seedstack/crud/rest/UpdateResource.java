@@ -17,6 +17,7 @@ import javax.ws.rs.core.MediaType;
 
 import org.seedstack.business.domain.AggregateNotFoundException;
 import org.seedstack.business.domain.AggregateRoot;
+import org.seedstack.seed.transaction.Transactional;
 
 /**
  * Specialization of {@link Resource} for updating aggregates (the U of CRUD).
@@ -49,6 +50,7 @@ public interface UpdateResource<A extends AggregateRoot<I>, I, D> extends Resour
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
   @Path("/{id}")
+  @Transactional
   default D update(@PathParam("id") I id, D representation) {
     A aggregate;
     try {

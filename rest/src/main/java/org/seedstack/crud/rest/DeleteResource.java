@@ -14,6 +14,7 @@ import javax.ws.rs.PathParam;
 
 import org.seedstack.business.domain.AggregateNotFoundException;
 import org.seedstack.business.domain.AggregateRoot;
+import org.seedstack.seed.transaction.Transactional;
 
 /**
  * Specialization of {@link Resource} for deleting aggregates (the D of CRUD).
@@ -42,6 +43,7 @@ public interface DeleteResource<A extends AggregateRoot<I>, I, D> extends Resour
    */
   @DELETE
   @Path("/{id}")
+  @Transactional
   default void delete(@PathParam("id") I id) {
     try {
       getRepository().remove(id);

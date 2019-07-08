@@ -52,11 +52,6 @@ class CrudResourceGenerator {
     private static final String GENERATED_CLASS_NAME_TEMPLATE = "org.seedstack.crud.generated."
             + "resource.%sResource";
 
-    private static final String TRANSACTIONAL_PACKAGE = "javax.transaction";
-    private static final String JPA_PACKAGE = "org.seedstack.jpa";
-
-    private boolean isJpaPresent = false;
-
     private static final Logger LOGGER = LoggerFactory.getLogger(CrudResourceGenerator.class);
 
     // Regex debug: https://regex101.com/r/8XIg1I/2
@@ -69,19 +64,15 @@ class CrudResourceGenerator {
     private final ClassLoader classLoader;
 
     private final Pattern classNameCleanupPattern;
-    private final ClassPool classPool;
+    private final ClassPool cp;
 
     CrudResourceGenerator() {
         classLoader = ClassLoaders.findMostCompleteClassLoader(CrudResourceGenerator.class);
-        classPool = new ClassPool(false);
-        classPool.appendClassPath(new LoaderClassPath(classLoader));
+        cp = new ClassPool(false);
+        cp.appendClassPath(new LoaderClassPath(classLoader));
         classNameCleanupPattern = Pattern.compile(NAME_SUBSTITUTION_EXPRESSION,
                 Pattern.CASE_INSENSITIVE);
 
-    }
-
-    public void enableJpaPlugin() {
-        this.isJpaPresent = true;
     }
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
@@ -105,7 +96,7 @@ class CrudResourceGenerator {
 
             CtClass resource = createClass(dtoClass);
             resource.setModifiers(Modifier.PUBLIC);
-            resource.setSuperclass(classPool.get(BaseResource.class.getName()));
+            resource.setSuperclass(cp.get(BaseResource.class.getName()));
 
             prepareImports();
             // Build a constructor that uses BaseResource to define the generated resource
@@ -120,7 +111,8 @@ class CrudResourceGenerator {
             List<ClassType> interfaceClassTypes = new ArrayList<>();
 
             if (restAnnotation.create()) {
-                resource.addInterface(classPool.getCtClass(CreateResource.class.getName()));
+                resource.addInterface(cp
+                        .getCtClass(JpaCrudIntegration.getResourceName(CreateResource.class)));
                 interfaceClassTypes.add(buildClassType(CreateResource.class,
                         aggregateRootClass,
                         aggregateClassId,
@@ -128,7 +120,8 @@ class CrudResourceGenerator {
             }
 
             if (restAnnotation.delete()) {
-                resource.addInterface(classPool.getCtClass(DeleteResource.class.getName()));
+                resource.addInterface(
+                        cp.getCtClass(JpaCrudIntegration.getResourceName(DeleteResource.class)));
                 interfaceClassTypes.add(buildClassType(DeleteResource.class,
                         aggregateRootClass,
                         aggregateClassId,
@@ -136,7 +129,8 @@ class CrudResourceGenerator {
             }
 
             if (restAnnotation.update()) {
-                resource.addInterface(classPool.getCtClass(UpdateResource.class.getName()));
+                resource.addInterface(
+                        cp.getCtClass(JpaCrudIntegration.getResourceName(UpdateResource.class)));
                 interfaceClassTypes.add(buildClassType(UpdateResource.class,
                         aggregateRootClass,
                         aggregateClassId,
@@ -144,7 +138,8 @@ class CrudResourceGenerator {
             }
 
             if (restAnnotation.read()) {
-                resource.addInterface(classPool.getCtClass(ReadResource.class.getName()));
+                resource.addInterface(
+                        cp.getCtClass(JpaCrudIntegration.getResourceName(ReadResource.class)));
                 interfaceClassTypes.add(buildClassType(ReadResource.class,
                         aggregateRootClass,
                         aggregateClassId,
@@ -161,10 +156,6 @@ class CrudResourceGenerator {
             addPathAnnotation(resource, restAnnotation,
                     generateClassName(dtoClass).replace("Resource", ""));
 
-            if (isJpaPresent) {
-                addJpaSupport(resource);
-            }
-
             resource.addConstructor(createConstructor(resource.getClassFile().getConstPool(),
                     resource,
                     aggregateRootClass,
@@ -175,6 +166,7 @@ class CrudResourceGenerator {
                     classLoader,
                     CrudResourceGenerator.class.getProtectionDomain());
         } catch (CannotCompileException | NotFoundException ex) {
+            ex.printStackTrace();
             throw BusinessException.wrap(ex, CrudRestErrorCode.CRUD_REPOSITORY_GENERATION_FAILED)
                     .put("dtoClass", dtoClass);
         }
@@ -185,18 +177,6 @@ class CrudResourceGenerator {
                 AnnotationsAttribute.visibleTag);
         attribute.setAnnotation(createAnnotation(constPool, Inject.class));
         cc.getMethodInfo().addAttribute(attribute);
-    }
-
-    private void addJpaSupport(CtClass resource) {
-
-        classPool.importPackage(TRANSACTIONAL_PACKAGE);
-        classPool.importPackage(JPA_PACKAGE);
-        
-        ClassFile ccFile = resource.getClassFile();
-        ConstPool constPool = ccFile.getConstPool();
-        ccFile.addAttribute(
-                createAnnotation(CrudRestPlugin.TRANSACTIONAL_ANNOTATION, "", constPool));
-        ccFile.addAttribute(createAnnotation(CrudRestPlugin.JPA_UNIT_ANNOTATION, "", constPool));
     }
 
     private void addPathAnnotation(CtClass resource, RestCrud configuration, String resourceName) {
@@ -244,7 +224,7 @@ class CrudResourceGenerator {
     }
 
     private CtClass createClass(Class<?> baseDto) {
-        return classPool.makeClass(generateFullClassName(baseDto));
+        return cp.makeClass(generateFullClassName(baseDto));
     }
 
     @SuppressWarnings("rawtypes")
@@ -284,8 +264,8 @@ class CrudResourceGenerator {
     }
 
     private void prepareImports() {
-        classPool.importPackage(AggregateNotFoundException.class.getPackage().getName());
-        classPool.importPackage(NotFoundException.class.getPackage().getName());
+        cp.importPackage(AggregateNotFoundException.class.getPackage().getName());
+        cp.importPackage(NotFoundException.class.getPackage().getName());
 
     }
 

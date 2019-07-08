@@ -7,13 +7,6 @@
  */
 package org.seedstack.crud.rest.internal;
 
-import com.google.inject.AbstractModule;
-
-import io.nuun.kernel.api.plugin.InitState;
-import io.nuun.kernel.api.plugin.context.InitContext;
-import io.nuun.kernel.api.plugin.request.ClasspathScanRequest;
-import io.nuun.kernel.api.plugin.request.ClasspathScanRequestBuilder;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -23,18 +16,17 @@ import java.util.Set;
 
 import org.seedstack.seed.core.internal.AbstractSeedPlugin;
 import org.seedstack.seed.rest.spi.RestProvider;
-import org.seedstack.shed.reflect.Classes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.inject.AbstractModule;
+
+import io.nuun.kernel.api.plugin.InitState;
+import io.nuun.kernel.api.plugin.context.InitContext;
+import io.nuun.kernel.api.plugin.request.ClasspathScanRequest;
+import io.nuun.kernel.api.plugin.request.ClasspathScanRequestBuilder;
+
 public class CrudRestPlugin extends AbstractSeedPlugin implements RestProvider {
-
-    public static final String JPA_UNIT_ANNOTATION = "org.seedstack.jpa.JpaUnit";
-    public static final String TRANSACTIONAL_ANNOTATION = "javax.transaction.Transactional";
-
-    private static final boolean JPA_AVAILABLE = Classes.optional(JPA_UNIT_ANNOTATION).isPresent();
-    private static final boolean TRANSACTIONAL_AVAILABLE = Classes
-            .optional(TRANSACTIONAL_ANNOTATION).isPresent();
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CrudRestPlugin.class);
     private final Set<Class<?>> crudGeneratedResources = new HashSet<>();
@@ -74,17 +66,13 @@ public class CrudRestPlugin extends AbstractSeedPlugin implements RestProvider {
 
     @Override
     protected InitState initialize(InitContext initContext) {
+
+        JpaCrudIntegration.attemp();
+
         crudResources.addAll(initContext.scannedTypesBySpecification()
                 .get(CrudResourceSpecification.INSTANCE));
 
         LOGGER.debug("found {} annotated Dto's to be build", crudResources.size());
-
-        if (JPA_AVAILABLE && TRANSACTIONAL_AVAILABLE) {
-            LOGGER.debug("JPA Plugin detected, Adding support for generated classes");
-            generator.enableJpaPlugin();
-        }else {
-            LOGGER.debug("JPA Plugin not detected, Skipping Jpa Support");
-        }
 
         crudResources.stream().map(generator::generate).forEach(crudGeneratedResources::add);
         return InitState.INITIALIZED;

@@ -18,6 +18,7 @@ import javax.ws.rs.core.UriInfo;
 
 import org.seedstack.business.domain.AggregateExistsException;
 import org.seedstack.business.domain.AggregateRoot;
+import org.seedstack.seed.transaction.Transactional;
 
 /**
  * Specialization of {@link Resource} for creating aggregates (the C of CRUD).
@@ -47,6 +48,7 @@ public interface CreateResource<A extends AggregateRoot<I>, I, D> extends Resour
   @POST
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
+  @Transactional
   default Response create(D representation, @Context UriInfo uriInfo) {
     A aggregate = getFluentAssembler().merge(representation)
         .into(getAggregateRootClass())
