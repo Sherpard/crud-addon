@@ -24,7 +24,7 @@
 
     <properties>
         <seed.version>3.8.5</seed.version>
-        <business.version>4.2.2</business.version>
+        <business.version>4.3.0</business.version>
         <transaction-api.version>1.2</transaction-api.version>
 
         <compatibility.skip>true</compatibility.skip>
