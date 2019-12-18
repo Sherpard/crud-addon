@@ -23,7 +23,7 @@
     <packaging>pom</packaging>
 
     <properties>
-        <seed.version>3.8.5</seed.version>
+        <seed.version>3.9.1</seed.version>
         <business.version>4.2.2</business.version>
         <transaction-api.version>1.2</transaction-api.version>
 
